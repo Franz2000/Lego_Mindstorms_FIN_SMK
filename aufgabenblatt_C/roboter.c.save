@@ -1,0 +1,139 @@
+#include <string.h>
+#include <stdio.h>
+
+#include <ev3.h>
+#include <ev3_port.h>
+#include <ev3_sensor.h>
+#include <ev3_tacho.h>
+
+/*Global variables*/
+int is_verbose = 0;
+
+void set_verbose(int argc, char *argv[])
+{
+	if(argc > 1)
+	{
+		if(strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--verbose") == 0)
+		{
+			is_verbose = 1;
+		}
+	}
+}
+
+void print_verbose(char *messages[], int number_of_messages, int conditions[])
+{
+	/*The last message is always the else message*/
+	conditions[number_of_messages - 1] = 1;
+
+	for(int i = 0; i < number_of_messages; i++)
+	{
+		if(conditions[i])
+		{
+			printf("%s\n", messages[i]);
+			break;
+		}
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	/*Verbose Mode*/
+	set_verbose(argc, argv);
+
+	/*Initialize Remote Access*/
+	int remote_access_state = ev3_init();
+	if(is_verbose)
+	{
+		int conditions[3];
+		char *messages[3];
+
+		conditions[0] = remote_access_state == 0;
+		messages[0] = "EV3-Brick is not found!";
+		conditions[1] = remote_access_state == 1;
+		messages[1] = "EV3-Brick is found!";
+		conditions[2] = remote_access_state == -1;
+		messages[2] = "Error-finding EV3-Brick!\n";
+
+		print_verbose(messages, 3, conditions);
+	}
+
+	char message_buffer[100];
+
+	/*Sensor initialization*/
+	int number_of_sensors = ev3_sensor_init();
+
+	uint8_t sn_color_sensor;
+	if(ev3_search_sensor(LEGO_EV3_COLOR, &sn_color_sensor, 0) && is_verbose)
+	{
+	
+	}
+	else if(is_verbose)
+	{
+		printf("Do not found a color sensor.\n");
+	}
+
+	uint8_t sn_touch_sensor;
+	if(ev3_search_sensor(LEGO_EV3_TOUCH, &sn_touch_sensor, 0) && is_verbose)
+	{
+		char buf[255];
+		ev3_sensor_port_name(sn_touch_sensor, buf);
+		printf("The sensor %s is found at Port %s.\n", ev3_sensor_type(LEGO_EV3_TOUCH), buf);
+	}
+	else if(is_verbose)
+	{
+		printf("Do not found a color sensor.\n");
+	}
+
+	if(is_verbose)
+	{
+		sprintf(message_buffer, "The number of found sensors is %i.\n", number_of_sensors);
+		char buf[255];
+		ev3_sensor_port_name(sn_color_sensor, buf);
+		sprintf("The sensor %s is found at Port %s.\n", ev3_sensor_type(LEGO_EV3_COLOR), buf);
+	}
+
+	/*Actuator initialization*/
+	int number_of_actuator = ev3_tacho_init();
+	if(is_verbose)
+	{
+		printf("The number of found actuators is %i.\n", number_of_actuator);
+	}
+
+	uint8_t sn_medium_motor;
+	if(ev3_search_tacho(LEGO_EV3_M_MOTOR, &sn_medium_motor, 0) && is_verbose)
+	{
+		char buf[255];
+		ev3_tacho_port_name(sn_medium_motor, buf);
+		printf("The motor %s is found at Port %s.\n", ev3_tacho_type(LEGO_EV3_M_MOTOR), buf);
+	}
+	else if(is_verbose)
+	{
+		printf("Do not found the medium motor.\n");
+	}
+
+	uint8_t sn_large_motor_1;
+	if(ev3_search_tacho_plugged_in(OUTPUT_B, EXT_PORT__NONE_, &sn_large_motor_1, 0) && is_verbose)
+	{
+		char buf[255];
+		ev3_tacho_port_name(sn_large_motor_1, buf);
+		printf("The motor %s is found at Port %s.\n", ev3_tacho_type(LEGO_EV3_L_MOTOR), buf);
+	}
+	else if(is_verbose)
+	{
+		printf("Do not found the large motor.\n");
+	}
+
+	uint8_t sn_large_motor_2;
+	if(ev3_search_tacho_plugged_in(OUTPUT_C, EXT_PORT__NONE_, &sn_large_motor_2, 0) && is_verbose)
+	{
+		char buf[255];
+		ev3_tacho_port_name(sn_large_motor_2, buf);
+		printf("The motor %s is found at Port %s.\n", ev3_tacho_type(LEGO_EV3_L_MOTOR), buf);
+	}
+	else if(is_verbose)
+	{
+		printf("Do not found the large motor.\n");
+	}
+	ev3_uninit();
+	return 0;
+}
