@@ -1,4 +1,4 @@
-# Lego Mindstorms FIN SMK
+# Lego Mindstorms FIN SMK 2021/22
 
 Hier findet Ihr alle Lösungen zu den Aufgabenblättern aus dem ELearning.
 
